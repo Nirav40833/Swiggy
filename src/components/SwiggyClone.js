@@ -11,7 +11,7 @@ const categories = [
   { id: "Desserts", label: "Desserts", icon: "🍰" },
   { id: "Healthy", label: "Healthy", icon: "🥗" },
 ];
-
+zz
 const restaurants = [
   {
     id: 1, name: "Biryani Blues", cuisine: "Biryani, Mughlai", category: "Biryani",

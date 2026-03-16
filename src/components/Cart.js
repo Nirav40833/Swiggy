@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Cart({ isOpen, onClose, items, onAdd, onRemove, onClear, total }) {
+export default function Cart({ isOpen, onClose, items, onAdd, onRemove, onClear, total, user, onPlaceOrder, loading: apiLoading }) {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
@@ -21,13 +21,29 @@ export default function Cart({ isOpen, onClose, items, onAdd, onRemove, onClear,
     }
   };
 
-  const placeOrder = () => {
-    setOrderPlaced(true);
-    setTimeout(() => {
-      setOrderPlaced(false);
-      onClear();
-      onClose();
-    }, 4000);
+  const placeOrder = async () => {
+    if (!user) {
+      alert("Please sign in to place an order!");
+      return;
+    }
+    try {
+      if (onPlaceOrder) {
+        await onPlaceOrder({
+          total: grandTotal,
+          deliveryFee,
+          tax: taxes,
+          discount,
+          promoCode: discount > 0 ? promoCode : null,
+        });
+      }
+      setOrderPlaced(true);
+      setTimeout(() => {
+        setOrderPlaced(false);
+        onClose();
+      }, 4000);
+    } catch (e) {
+      alert("Order failed: " + e.message);
+    }
   };
 
   return (
@@ -254,21 +270,27 @@ export default function Cart({ isOpen, onClose, items, onAdd, onRemove, onClear,
 
             {/* Checkout Button */}
             <div style={{ padding: "16px 20px", borderTop: "1px solid #f0f0f0" }}>
+              {!user && (
+                <div style={{ background: "#fff3e8", border: "1px solid #FC8019", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 13, color: "#FC8019", fontWeight: 600, textAlign: "center" }}>
+                  ⚠️ Please Sign In to place order
+                </div>
+              )}
               <button
                 onClick={placeOrder}
+                disabled={apiLoading}
                 style={{
                   width: "100%", padding: "16px",
-                  background: "linear-gradient(135deg, #FC8019, #ff5722)",
+                  background: apiLoading ? "#ccc" : "linear-gradient(135deg, #FC8019, #ff5722)",
                   color: "white", border: "none", borderRadius: 14,
-                  fontWeight: 800, fontSize: 16, cursor: "pointer",
+                  fontWeight: 800, fontSize: 16, cursor: apiLoading ? "not-allowed" : "pointer",
                   fontFamily: "inherit",
                   boxShadow: "0 4px 20px rgba(252,128,25,0.4)",
                   transition: "transform 0.2s"
                 }}
-                onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
+                onMouseEnter={e => { if(!apiLoading) e.currentTarget.style.transform = "scale(1.02)"; }}
                 onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
               >
-                Place Order • ₹{grandTotal}
+                {apiLoading ? "Placing Order..." : `Place Order • ₹${grandTotal}`}
               </button>
               <p style={{
                 textAlign: "center", fontSize: 11, color: "#aaa",
