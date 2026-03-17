@@ -37,7 +37,8 @@ export default function Footer() {
                   onMouseEnter={e => e.currentTarget.style.background = "#FC8019"}
                   onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
                 >
-                  {icon}
+                  {icon} 
+                  
                 </div>
               ))}
             </div>
